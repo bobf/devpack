@@ -25,7 +25,9 @@ Gem::Specification.new do |spec|
   spec.executables   = []
   spec.require_paths = ['lib']
 
+  spec.add_development_dependency 'byebug', '~> 11.1'
   spec.add_development_dependency 'rspec', '~> 3.9'
+  spec.add_development_dependency 'rspec-its', '~> 1.3'
   spec.add_development_dependency 'rubocop', '~> 0.86.0'
   spec.add_development_dependency 'strong_versions', '~> 0.4.4'
 end

@@ -38,6 +38,11 @@ It is recommended that the `.devpack` file is added to your `.gitignore`:
 .devpack
 ```
 
+To disable _Devpack_ set the environment variable `DISABLE_DEVPACK` to any value:
+```bash
+DISABLE_DEVPACK=1 bundle exec ruby myapp.rb
+```
+
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).

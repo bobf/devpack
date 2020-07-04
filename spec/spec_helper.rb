@@ -1,7 +1,12 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
+require 'tempfile'
+
+ENV['DISABLE_DEVPACK'] = '1' # We invoke manually in tests
 require 'devpack'
+
+require 'rspec/its'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
