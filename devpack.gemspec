@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['git@bob.frl']
 
   spec.summary       = 'Conveniently tailor your development environment'
-  spec.description   = 'Provide a list of gems to load in your own environment'
+  spec.description   = 'Allow developers to optionally include a set of development gems without adding to the Gemfile.'
   spec.homepage      = 'https://github.com/bobf/devpack'
   spec.license       = 'MIT'
   spec.required_ruby_version = Gem::Requirement.new('>= 2.3.0')
