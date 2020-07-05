@@ -8,7 +8,6 @@ module Devpack
 
     def initialize(path)
       @load_path = $LOAD_PATH
-      @gem_home = Pathname.new(ENV['GEM_HOME'])
       @path = Pathname.new(path)
     end
 
@@ -18,7 +17,7 @@ module Devpack
 
       gems, time = timed { load_devpack(path) }
       names = gems.map(&:first)
-      warn(loaded_message(path, gems, time))
+      warn(loaded_message(path, gems, time.round(2)))
       names
     end
 
@@ -79,10 +78,16 @@ module Devpack
     end
 
     def gems_glob
-      @gems_glob ||= Dir.glob(@gem_home.join('gems', '**', '*'))
+      @gems_glob ||= gem_paths.map { |path| Dir.glob(path.join('gems', '*')) }.flatten
     end
 
-    def gem_path(name)
+    def gem_paths
+      return [] unless ENV.key?('GEM_PATH')
+
+      ENV.fetch('GEM_PATH').split(':').map { |path| Pathname.new(path) }
+    end
+
+    def path_to_gem(name)
       found = gems_glob.find do |path|
         pathname = Pathname.new(path)
         next unless pathname.directory?
@@ -96,7 +101,7 @@ module Devpack
     end
 
     def update_load_path(name)
-      path = gem_path(name)
+      path = path_to_gem(name)
       return if path.nil?
 
       $LOAD_PATH.concat(require_paths(path, name))

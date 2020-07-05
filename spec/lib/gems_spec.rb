@@ -19,7 +19,7 @@ RSpec.describe Devpack::Gems do
     let(:not_installed_gems) { %w[not_installed1 not_installed2 not_installed3] }
 
     before do
-      stub_const('ENV', ENV.to_h.merge('GEM_HOME' => gem_home.to_s))
+      stub_const('ENV', ENV.to_h.merge('GEM_PATH' => "#{gem_home}:/some/other/directory"))
       FileUtils.mkdir_p(project_path)
       File.write(devpack_path.join('.devpack'), requested_gems.join("\n"))
       allow(Kernel).to receive(:require).and_call_original
