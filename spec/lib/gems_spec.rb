@@ -4,8 +4,9 @@
 # of times will break if any other warnings occur. We should ensure that each
 # message starts with "[devpack]".
 RSpec.describe Devpack::Gems do
-  subject(:gems) { described_class.new(project_path) }
+  subject(:gems) { described_class.new(config) }
 
+  let(:config) { Devpack::Config.new(project_path) }
   let(:project_path) { Pathname.new(Dir.tmpdir).join('example') }
   let(:devpack_path) { project_path }
   let(:gem_home) { Pathname.new(File.join(Dir.tmpdir, 'gem_home')) }
@@ -42,29 +43,6 @@ RSpec.describe Devpack::Gems do
       end
     end
 
-    context 'with .devpack file in parent of provided directory' do
-      let(:devpack_path) { Pathname.new(Dir.tmpdir).join('example') }
-      let(:project_path) { devpack_path.join('child', 'directory') }
-      let(:requested_gems) { installed_gems }
-      before { expect(Kernel).to receive(:warn).exactly(1).times }
-      it { is_expected.to eql requested_gems }
-    end
-
-    context 'with too many parent directories' do
-      let(:devpack_path) { Pathname.new(Dir.tmpdir).join('example') }
-      let(:requested_gems) { installed_gems }
-      let(:project_path) do
-        next_path = devpack_path
-        (Devpack::Gems::MAX_PARENTS + 1).times do
-          next_path = next_path.join('child')
-          FileUtils.mkdir_p(next_path)
-        end
-        next_path
-      end
-
-      it { is_expected.to be_empty }
-    end
-
     context 'no .devpack file present in provided directory' do
       let(:requested_gems) { [] }
       before do
@@ -74,8 +52,9 @@ RSpec.describe Devpack::Gems do
       it { is_expected.to be_empty }
     end
 
-    context '.gemspec found in provided directory' do
+    context '.gemspec found in specifications directory' do
       let(:requested_gems) { ['example'] }
+      let(:installed_gems) { requested_gems }
       let(:example_gem_path) { gem_home.join('gems', 'example-1.0.0') }
       let(:gemspec_path) do
         File.expand_path(File.join(__dir__, '..', 'fixtures', 'example.gemspec'))
@@ -83,7 +62,9 @@ RSpec.describe Devpack::Gems do
 
       before do
         FileUtils.mkdir_p(example_gem_path.join('lib'))
-        example_gem_path.join('example.gemspec').write(File.read(gemspec_path))
+        FileUtils.mkdir_p(gem_home.join('specifications'))
+        gem_home.join('specifications', 'example.gemspec')
+                .write(File.read(gemspec_path))
         example_gem_path.join('lib', 'example.rb').write('')
       end
 

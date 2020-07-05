@@ -1,6 +1,6 @@
 # Devpack
 
-Conveniently load a set of gems to tailor your development environment without modifying your application's _Gemfile_. Configurable globally or per-project.
+Include a single gem in your `Gemfile` to allow developers to optionally include their preferred set of development gems without cluttering the `Gemfile`. Configurable globally or per-project.
 
 ## Installation
 
@@ -8,7 +8,7 @@ Add the gem to your `Gemfile`:
 
 ```ruby
 group :development, :test do
-  gem 'devpack', '~> 0.1.0'
+  gem 'devpack', '~> 0.1.1'
 end
 ```
 
@@ -20,23 +20,27 @@ $ bundle install
 
 ## Usage
 
-Create a file named `.devpack` in your project's directory (or any parent directory) containing a list of gems you wish to load:
+Create a file named `.devpack` in your project's directory:
 
 ```
 # .devpack
 awesome_print
 byebug
 better_errors
+
+# Optionally specify a version:
+pry:0.13.1
 ```
 
-All listed gems will be automatically required.
+All listed gems will be automatically required at launch. Any gems that fail to load will generate a warning.
 
-It is recommended that the `.devpack` file is added to your `.gitignore`:
+It is recommended that `.devpack` is added to your `.gitignore`.
 
-```
-# .gitignore
-.devpack
-```
+### Global Configuration
+
+To configure globally simply save your `.devpack` configuration file to any parent directory of your project directory, e.g. `~/.devpack`.
+
+### Disabling
 
 To disable _Devpack_ set the environment variable `DISABLE_DEVPACK` to any value:
 ```bash

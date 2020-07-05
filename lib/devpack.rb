@@ -3,12 +3,18 @@
 require 'rubygems'
 require 'pathname'
 
-require 'devpack/version'
+require 'devpack/config'
 require 'devpack/gems'
-require 'devpack/gem_specification_context'
+require 'devpack/gem_glob'
+require 'devpack/gem_path'
+require 'devpack/messages'
+require 'devpack/version'
 
 module Devpack
   class Error < StandardError; end
 end
 
-Devpack::Gems.new('.').load unless ENV.key?('DISABLE_DEVPACK')
+unless ENV.key?('DISABLE_DEVPACK')
+  config = Devpack::Config.new(Dir.pwd)
+  Devpack::Gems.new(config).load
+end

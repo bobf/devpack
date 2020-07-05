@@ -2,6 +2,10 @@ Metrics/BlockLength:
   Exclude:
     - "spec/**/*"
 
+AllCops:
+  Exclude:
+  - "spec/fixtures/**/*"
+
 Layout/EmptyLinesAroundAttributeAccessor:
   Enabled: true
 Layout/SpaceAroundMethodCallOperator:
