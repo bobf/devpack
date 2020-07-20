@@ -15,3 +15,9 @@ Load latest version of gem by default. Allow specifying version with rubygems sy
 Permit comments in config file.
 
 Use `Gem::Specification` to load "rendered" gemspec (i.e. the file created by rubygems when the gem is installed).  This version of the gemspec will load very quickly so no need to do custom gemspec parsing any more. This also accounts for "missing" gemspecs.
+
+## 0.1.2
+
+Recursively include gem dependencies in `$LOAD_PATH` rather than assuming that any dependencies are already loaded.
+
+Include original error message when warning that a gem was unable to be loaded.
