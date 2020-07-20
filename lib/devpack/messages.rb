@@ -3,10 +3,10 @@
 module Devpack
   # Generates output messages.
   class Messages
-    def self.failure_message(name)
+    def self.failure_message(name, error)
       base = "Failed to load `#{name}`"
       install = "bundle exec gem install #{name}"
-      "#{base}. Try `#{install}`"
+      "#{base}. Try `#{install}` (#{error})"
     end
 
     def self.loaded_message(path, gems, time)

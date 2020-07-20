@@ -31,8 +31,8 @@ module Devpack
     def load_gem(name)
       update_load_path(name)
       [name, Kernel.require(name)]
-    rescue LoadError
-      warn(Messages.failure_message(name))
+    rescue LoadError => e
+      warn(Messages.failure_message(name, e))
       nil
     end
 

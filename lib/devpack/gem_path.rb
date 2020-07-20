@@ -9,16 +9,27 @@ module Devpack
       @glob = glob
     end
 
-    def require_paths
+    def require_paths(visited = Set.new)
       return [] unless gemspec_path&.exist? && gem_path&.exist?
 
-      Gem::Specification
-        .load(gemspec_path.to_s)
-        .require_paths
-        .map { |path| gem_path.join(path).to_s }
+      (immediate_require_paths + dependency_require_paths(visited))
+        .compact.flatten.uniq
     end
 
     private
+
+    def dependency_require_paths(visited)
+      dependencies.map do |dependency|
+        next nil if visited.include?(dependency)
+
+        visited << dependency
+        GemPath.new(@glob, name_with_version(dependency)).require_paths(visited)
+      end
+    end
+
+    def dependencies
+      gemspec.runtime_dependencies
+    end
 
     def gem_path
       return nil if located_gem.nil?
@@ -31,6 +42,23 @@ module Devpack
 
       gem_path.join('..', '..', 'specifications', "#{gem_path.basename}.gemspec")
               .expand_path
+    end
+
+    def gemspec
+      @gemspec ||= Gem::Specification.load(gemspec_path.to_s)
+    end
+
+    def immediate_require_paths
+      gemspec
+        .require_paths
+        .map { |path| gem_path.join(path).to_s }
+    end
+
+    def name_with_version(dependency)
+      spec = dependency.to_spec
+      "#{spec.name}:#{spec.version}"
+    rescue Gem::MissingSpecError
+      dependency.name
     end
 
     def located_gem
