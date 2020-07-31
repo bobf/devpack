@@ -27,7 +27,24 @@ RSpec.describe Devpack::GemGlob do
 
       context 'gem version provided' do
         let(:name) { 'example:0.1.0' }
+        it { is_expected.to eql gem_path }
+      end
 
+      context 'another gem name is a substring of sought gem name' do
+        let(:name) { 'pry' }
+        let(:gem_path) { File.join(base_path, 'gems', 'pry-0.1.0') }
+        let(:other_path) { File.join(base_path, 'gems', 'pry-rails-0.1.0') }
+        before { FileUtils.mkdir_p(other_path) }
+        after { FileUtils.rm_r(other_path) }
+        it { is_expected.to eql gem_path }
+      end
+
+      context 'older version is string-sorted higher than newer version' do
+        let(:name) { 'example' }
+        let(:gem_path) { File.join(base_path, 'gems', 'example-0.10.0') }
+        let(:other_path) { File.join(base_path, 'gems', 'example-0.9.0') }
+        before { FileUtils.mkdir_p(other_path) }
+        after { FileUtils.rm_r(other_path) }
         it { is_expected.to eql gem_path }
       end
     end
