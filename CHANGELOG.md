@@ -21,3 +21,9 @@ Use `Gem::Specification` to load "rendered" gemspec (i.e. the file created by ru
 Recursively include gem dependencies in `$LOAD_PATH` rather than assuming that any dependencies are already loaded.
 
 Include original error message when warning that a gem was unable to be loaded.
+
+## 0.1.3
+
+Use a more appropriate method of identifying the latest version of a gem (use `Gem::Version` to sort matched gem paths).
+
+Fix edge case where e.g. `pry-rails-0.1.0` was matching for `pry` due to naive match logic. Split on last dash instead of first (i.e. don't assume gems will not have a dash in their name; last dash separates gem name from version in directory name).
