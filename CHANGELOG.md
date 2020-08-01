@@ -27,3 +27,11 @@ Include original error message when warning that a gem was unable to be loaded.
 Use a more appropriate method of identifying the latest version of a gem (use `Gem::Version` to sort matched gem paths).
 
 Fix edge case where e.g. `pry-rails-0.1.0` was matching for `pry` due to naive match logic. Split on last dash instead of first (i.e. don't assume gems will not have a dash in their name; last dash separates gem name from version in directory name).
+
+## 0.2.0
+
+Add support for initializers. Files located in a `.devpack_initializers` directory will be loaded after gems configured in `.devpack` have been loaded. When using _Rails_ these files will be loaded using the `after_initialize` hook. Thanks to @joshmn for this idea: https://github.com/bobf/devpack/issues/1
+
+Show full tracebacks of load errors when `DEVPACK_DEBUG` is set in environment.
+
+Rename `DISABLE_DEVPACK` environment variable to `DEVPACK_DISABLE` for consistency.

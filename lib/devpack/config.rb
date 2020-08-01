@@ -4,6 +4,7 @@ module Devpack
   # Locates and parses .devpack config file
   class Config
     FILENAME = '.devpack'
+    INITIALIZERS_DIRECTORY_NAME = '.devpack_initializers'
     MAX_PARENTS = 100 # Avoid infinite loops (symlinks/weird file systems)
 
     def initialize(pwd)
@@ -19,18 +20,26 @@ module Devpack
     end
 
     def devpack_path
-      @devpack_path ||= located_config_path(@pwd)
+      @devpack_path ||= located_path(@pwd, FILENAME, :file)
+    end
+
+    def devpack_initializers_path
+      @devpack_initializers_path ||= located_path(@pwd, INITIALIZERS_DIRECTORY_NAME, :directory)
+    end
+
+    def devpack_initializer_paths
+      devpack_initializers_path&.glob(File.join('**', '*.rb'))&.map(&:to_s)&.sort || []
     end
 
     private
 
-    def located_config_path(next_parent)
+    def located_path(next_parent, filename, type)
       loop.with_index(1) do |_, index|
         return nil if index > MAX_PARENTS
 
-        path = next_parent.join(FILENAME)
+        path = next_parent.join(filename)
         next_parent = next_parent.parent
-        next unless File.exist?(path)
+        next unless File.exist?(path) && File.public_send("#{type}?", path)
 
         return path
       end

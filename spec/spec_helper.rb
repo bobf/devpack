@@ -3,7 +3,7 @@
 require 'bundler/setup'
 require 'tempfile'
 
-ENV['DISABLE_DEVPACK'] = '1' # We invoke manually in tests
+ENV['DEVPACK_DISABLE'] = '1' # We invoke manually in tests
 require 'devpack'
 
 require 'rspec/its'
