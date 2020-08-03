@@ -35,3 +35,7 @@ Add support for initializers. Files located in a `.devpack_initializers` directo
 Show full tracebacks of load errors when `DEVPACK_DEBUG` is set in environment.
 
 Rename `DISABLE_DEVPACK` environment variable to `DEVPACK_DISABLE` for consistency.
+
+## 0.2.1
+
+Fully activate gem on load: add gem spec to `Gem.loaded_specs` and set instance variables `@loaded` and `@activated` to `true`. This mimics `Gem::Specification#activate` to ensure that anything that depends on these characteristics will function as normal.

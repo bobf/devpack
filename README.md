@@ -8,7 +8,7 @@ Add the gem to your `Gemfile`:
 
 ```ruby
 group :development, :test do
-  gem 'devpack', '~> 0.2.0'
+  gem 'devpack', '~> 0.2.1'
 end
 ```
 
