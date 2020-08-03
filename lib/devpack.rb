@@ -41,8 +41,10 @@ module Devpack
 end
 
 unless Devpack.disabled?
-  require 'devpack/railtie' if Devpack.rails?
-
-  Devpack::Gems.new(Devpack.config).load
-  Devpack::Initializers.new(Devpack.config).load unless Devpack.rails?
+  if Devpack.rails?
+    require 'devpack/railtie'
+  else
+    Devpack::Gems.new(Devpack.config).load
+    Devpack::Initializers.new(Devpack.config).load
+  end
 end
