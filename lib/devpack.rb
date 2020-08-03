@@ -7,7 +7,7 @@ require 'devpack/timeable'
 require 'devpack/config'
 require 'devpack/gems'
 require 'devpack/gem_glob'
-require 'devpack/gem_path'
+require 'devpack/gem_spec'
 require 'devpack/initializers'
 require 'devpack/messages'
 require 'devpack/version'
@@ -41,10 +41,8 @@ module Devpack
 end
 
 unless Devpack.disabled?
-  if Devpack.rails?
-    require 'devpack/railtie'
-  else
-    Devpack::Gems.new(Devpack.config).load
-    Devpack::Initializers.new(Devpack.config).load
-  end
+  require 'devpack/railtie' if Devpack.rails?
+
+  Devpack::Gems.new(Devpack.config).load
+  Devpack::Initializers.new(Devpack.config).load unless Devpack.rails?
 end

@@ -22,11 +22,13 @@ RSpec.describe Devpack::Gems do
 
     let(:installed_gems) { %w[installed1 installed2 installed3] }
     let(:not_installed_gems) { %w[not_installed1 not_installed2 not_installed3] }
+    let(:loaded_gems) { {} }
 
     before do
       stub_const('ENV', ENV.to_h.merge('GEM_PATH' => "#{gem_home}:/some/other/directory"))
       FileUtils.mkdir_p(project_path)
       allow(Kernel).to receive(:require).and_call_original
+      allow(Gem).to receive(:loaded_specs) { loaded_gems }
       installed_gems.each { |name| allow(Kernel).to receive(:require).with(name) }
     end
 
@@ -35,6 +37,11 @@ RSpec.describe Devpack::Gems do
         before { expect(Devpack).to receive(:warn).exactly(1).times }
         let(:requested_gems) { installed_gems }
         it { is_expected.to eql requested_gems }
+
+        it 'adds gemspec to Gem.loaded_specs' do
+          subject
+          expect(loaded_gems.keys).to contain_exactly('installed1', 'installed2', 'installed3')
+        end
       end
 
       context 'with some specified gems not installed' do
@@ -51,7 +58,8 @@ RSpec.describe Devpack::Gems do
             next if message.start_with?('Loaded 0 development gem(s)')
 
             [
-              "/devpack/lib/devpack/gems.rb:29:in `load_gem'",
+              "/devpack/lib/devpack/gems.rb:37:in `activate'",
+              "/devpack/lib/devpack/gems.rb:28:in `load_gem'",
               "/devpack/lib/devpack/gems.rb:24:in `block in load_devpack'",
               "/devpack/lib/devpack/gems.rb:24:in `map'",
               "/devpack/lib/devpack/gems.rb:24:in `load_devpack'",
@@ -89,8 +97,8 @@ RSpec.describe Devpack::Gems do
       end
 
       after { FileUtils.rm_r(gem_home.to_s) }
-
       before { expect(Devpack).to receive(:warn).exactly(1).times }
+
       it { is_expected.to eql requested_gems }
     end
   end

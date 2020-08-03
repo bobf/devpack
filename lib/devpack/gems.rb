@@ -25,11 +25,20 @@ module Devpack
     end
 
     def load_gem(name)
-      update_load_path(name)
-      [name, Kernel.require(name)]
+      [name, activate(name)]
     rescue LoadError => e
       warn(Messages.failure(name, load_error_message(e)))
       nil
+    end
+
+    def activate(name)
+      spec = GemSpec.new(gem_glob, name)
+      update_load_path(spec.require_paths)
+      loaded = Kernel.require(name)
+      Gem.loaded_specs[name] = spec.gemspec
+      spec.gemspec&.activated = true
+      spec.gemspec&.instance_variable_set(:@loaded, true)
+      loaded
     end
 
     def warn(message)
@@ -46,8 +55,8 @@ module Devpack
       @gem_glob ||= GemGlob.new
     end
 
-    def update_load_path(name)
-      $LOAD_PATH.concat(GemPath.new(gem_glob, name).require_paths)
+    def update_load_path(paths)
+      $LOAD_PATH.concat(paths)
     end
   end
 end

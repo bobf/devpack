@@ -3,7 +3,7 @@
 module Devpack
   # Locates relevant gemspec for a given gem and provides a full list of paths
   # for all `require_paths` listed in gemspec.
-  class GemPath
+  class GemSpec
     def initialize(glob, name)
       @name = name
       @glob = glob
@@ -16,6 +16,10 @@ module Devpack
         .compact.flatten.uniq
     end
 
+    def gemspec
+      @gemspec ||= Gem::Specification.load(gemspec_path.to_s)
+    end
+
     private
 
     def dependency_require_paths(visited)
@@ -23,7 +27,7 @@ module Devpack
         next nil if visited.include?(dependency)
 
         visited << dependency
-        GemPath.new(@glob, name_with_version(dependency)).require_paths(visited)
+        GemSpec.new(@glob, name_with_version(dependency)).require_paths(visited)
       end
     end
 
@@ -42,10 +46,6 @@ module Devpack
 
       gem_path.join('..', '..', 'specifications', "#{gem_path.basename}.gemspec")
               .expand_path
-    end
-
-    def gemspec
-      @gemspec ||= Gem::Specification.load(gemspec_path.to_s)
     end
 
     def immediate_require_paths
