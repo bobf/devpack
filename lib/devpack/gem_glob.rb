@@ -4,7 +4,9 @@ module Devpack
   # Locates gems by searching in paths listed in GEM_PATH
   class GemGlob
     def find(name)
-      matched_paths(name).max { |a, b| version(a) <=> version(b) }
+      matched_paths(name)
+        .sort { |a, b| version(a) <=> version(b) }
+        .reverse
     end
 
     private

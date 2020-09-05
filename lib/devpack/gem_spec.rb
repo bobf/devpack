@@ -4,30 +4,68 @@ module Devpack
   # Locates relevant gemspec for a given gem and provides a full list of paths
   # for all `require_paths` listed in gemspec.
   class GemSpec
-    def initialize(glob, name)
+    def initialize(glob, name, requirement)
       @name = name
       @glob = glob
+      @requirement = requirement
+      @dependency = Gem::Dependency.new(@name, @requirement)
     end
 
     def require_paths(visited = Set.new)
-      return [] unless gemspec_path&.exist? && gem_path&.exist?
+      raise LoadError, Messages.no_compatible_version(@dependency) if gemspec.nil?
 
-      (immediate_require_paths + dependency_require_paths(visited))
-        .compact.flatten.uniq
+      (immediate_require_paths + dependency_require_paths(visited)).compact.flatten.uniq
     end
 
     def gemspec
-      @gemspec ||= Gem::Specification.load(gemspec_path.to_s)
+      @gemspec ||= gemspecs.find do |spec|
+        next false if spec.nil?
+
+        @dependency.requirement.satisfied_by?(spec.version) && compatible?(spec)
+      end
     end
 
     private
+
+    def compatible?(spec)
+      return false if spec.nil?
+      return false if incompatible_version_loaded?(spec)
+
+      compatible_specs?(Gem.loaded_specs.values, [@dependency] + spec.runtime_dependencies)
+    end
+
+    def incompatible_version_loaded?(spec)
+      matched = Gem.loaded_specs[spec.name]
+      return false if matched.nil?
+
+      matched.version != spec.version
+    end
+
+    def compatible_specs?(specs, dependencies)
+      specs.all? { |spec| compatible_dependencies?(dependencies, spec) }
+    end
+
+    def compatible_dependencies?(dependencies, spec)
+      dependencies.all? { |dependency| compatible_dependency?(dependency, spec) }
+    end
+
+    def compatible_dependency?(dependency, spec)
+      return false if spec.nil?
+      return true unless dependency.name == spec.name
+
+      dependency.requirement.satisfied_by?(spec.version)
+    end
+
+    def gemspecs
+      @gemspecs ||= gemspec_paths.map { |path| Gem::Specification.load(path.to_s) }
+    end
 
     def dependency_require_paths(visited)
       dependencies.map do |dependency|
         next nil if visited.include?(dependency)
 
         visited << dependency
-        GemSpec.new(@glob, name_with_version(dependency)).require_paths(visited)
+        GemSpec.new(@glob, dependency.name, dependency.requirement).require_paths(visited)
       end
     end
 
@@ -35,34 +73,28 @@ module Devpack
       gemspec.runtime_dependencies
     end
 
-    def gem_path
-      return nil if located_gem.nil?
+    def gem_paths
+      return nil if candidates.empty?
 
-      Pathname.new(located_gem)
+      candidates.map { |candidate| Pathname.new(candidate) }
     end
 
-    def gemspec_path
-      return nil if gem_path.nil?
+    def gemspec_paths
+      return [] if gem_paths.nil?
 
-      gem_path.join('..', '..', 'specifications', "#{gem_path.basename}.gemspec")
-              .expand_path
+      gem_paths.map do |path|
+        path.join('..', '..', 'specifications', "#{path.basename}.gemspec").expand_path
+      end
     end
 
     def immediate_require_paths
       gemspec
         .require_paths
-        .map { |path| gem_path.join(path).to_s }
+        .map { |path| File.join(gemspec.full_gem_path, path) }
     end
 
-    def name_with_version(dependency)
-      spec = dependency.to_spec
-      "#{spec.name}:#{spec.version}"
-    rescue Gem::MissingSpecError
-      dependency.name
-    end
-
-    def located_gem
-      @located_gem ||= @glob.find(@name)
+    def candidates
+      @candidates ||= @glob.find(@name)
     end
   end
 end

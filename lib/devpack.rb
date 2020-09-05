@@ -2,6 +2,7 @@
 
 require 'rubygems'
 require 'pathname'
+require 'set'
 
 require 'devpack/timeable'
 require 'devpack/config'

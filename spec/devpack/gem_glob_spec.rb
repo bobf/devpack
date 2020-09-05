@@ -9,7 +9,7 @@ RSpec.describe Devpack::GemGlob do
     let(:name) { 'example' }
 
     context 'gem not present in GEM_PATH' do
-      it { is_expected.to be_nil }
+      it { is_expected.to be_empty }
     end
 
     context 'gem present in GEM_PATH' do
@@ -23,11 +23,11 @@ RSpec.describe Devpack::GemGlob do
 
       after { FileUtils.rm_r(gem_path) }
 
-      it { is_expected.to eql gem_path }
+      it { is_expected.to eql [gem_path] }
 
       context 'gem version provided' do
         let(:name) { 'example:0.1.0' }
-        it { is_expected.to eql gem_path }
+        it { is_expected.to eql [gem_path] }
       end
 
       context 'another gem name is a substring of sought gem name' do
@@ -36,7 +36,7 @@ RSpec.describe Devpack::GemGlob do
         let(:other_path) { File.join(base_path, 'gems', 'pry-rails-0.1.0') }
         before { FileUtils.mkdir_p(other_path) }
         after { FileUtils.rm_r(other_path) }
-        it { is_expected.to eql gem_path }
+        it { is_expected.to eql [gem_path] }
       end
 
       context 'older version is string-sorted higher than newer version' do
@@ -45,7 +45,7 @@ RSpec.describe Devpack::GemGlob do
         let(:other_path) { File.join(base_path, 'gems', 'example-0.9.0') }
         before { FileUtils.mkdir_p(other_path) }
         after { FileUtils.rm_r(other_path) }
-        it { is_expected.to eql gem_path }
+        it { is_expected.to eql [gem_path, other_path] }
       end
     end
   end
