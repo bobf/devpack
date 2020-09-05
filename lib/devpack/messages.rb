@@ -6,8 +6,7 @@ module Devpack
     class << self
       def failure(name, error_message)
         base = "Failed to load `#{name}`"
-        install = "bundle exec gem install #{name}"
-        "#{base}. Try `#{install}` #{error_message}"
+        "#{base}. #{error_message}"
       end
 
       def initializer_failure(path, error_message)
@@ -24,6 +23,10 @@ module Devpack
 
       def loaded_initializers(path, initializers, time)
         "Loaded #{initializers.compact.size} initializer(s) from '#{path}' in #{time} seconds"
+      end
+
+      def no_compatible_version(dependency)
+        "No compatible version found for `#{dependency.requirement}`"
       end
 
       private

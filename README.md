@@ -8,7 +8,7 @@ Add the gem to your `Gemfile`:
 
 ```ruby
 group :development, :test do
-  gem 'devpack', '~> 0.2.1'
+  gem 'devpack', '~> 0.3.0'
 end
 ```
 
@@ -40,6 +40,8 @@ require 'devpack'
 ```
 
 Any gems that fail to load (due to `LoadError`) will generate a warning.
+
+All dependencies are recursively verified for compatibily before loading. If no compatible version can be located then the gem will not be loaded.
 
 It is recommended that `.devpack` is added to your `.gitignore`.
 

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe Devpack::Gems do
-  subject(:gems) { described_class.new(config) }
+  subject(:gems) { described_class.new(config, glob) }
 
   let(:config) do
     instance_double(
@@ -10,6 +10,7 @@ RSpec.describe Devpack::Gems do
       devpack_path: devpack_path.join('.devpack')
     )
   end
+  let(:glob) { instance_double(Devpack::GemGlob) }
   let(:project_path) { Pathname.new(Dir.tmpdir).join('example') }
   let(:devpack_path) { project_path }
   let(:requested_gems) { [] }
@@ -23,12 +24,27 @@ RSpec.describe Devpack::Gems do
     let(:installed_gems) { %w[installed1 installed2 installed3] }
     let(:not_installed_gems) { %w[not_installed1 not_installed2 not_installed3] }
     let(:loaded_gems) { {} }
+    let(:gemspec) do
+      instance_double(
+        Gem::Specification,
+        version: Gem::Version.new('1'),
+        name: 'gem',
+        runtime_dependencies: [],
+        require_paths: [],
+        'activated=': nil
+      )
+    end
 
     before do
       stub_const('ENV', ENV.to_h.merge('GEM_PATH' => "#{gem_home}:/some/other/directory"))
       FileUtils.mkdir_p(project_path)
       allow(Kernel).to receive(:require).and_call_original
       allow(Gem).to receive(:loaded_specs) { loaded_gems }
+      allow(glob).to receive(:find).with(any_args) do |name|
+        installed_gems.include?(name) ? [name] : []
+      end
+      allow(Gem::Specification).to receive(:load) { gemspec }
+
       installed_gems.each { |name| allow(Kernel).to receive(:require).with(name) }
     end
 
@@ -58,13 +74,11 @@ RSpec.describe Devpack::Gems do
             next if message.start_with?('Loaded 0 development gem(s)')
 
             [
-              "/devpack/lib/devpack/gems.rb:37:in `activate'",
-              "/devpack/lib/devpack/gems.rb:28:in `load_gem'",
-              "/devpack/lib/devpack/gems.rb:24:in `block in load_devpack'",
-              "/devpack/lib/devpack/gems.rb:24:in `map'",
-              "/devpack/lib/devpack/gems.rb:24:in `load_devpack'",
-              "/devpack/lib/devpack/gems.rb:15:in `block in load'",
-              "/devpack/lib/devpack/gems.rb:15:in `load'"
+              'Failed to load',
+              'No compatible version found for `>= 0`',
+              '/devpack/lib/devpack/gems.rb',
+              "`activate'",
+              "`load_gem'"
             ].each { |line| expect(message).to include line }
           end
           subject
