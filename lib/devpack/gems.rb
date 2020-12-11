@@ -31,6 +31,7 @@ module Devpack
     def load_gem(name, requirement)
       [name, activate(name, requirement)]
     rescue LoadError => e
+      deactivate(name)
       warn(Messages.failure(name, load_error_message(e)))
       nil
     end
@@ -38,11 +39,17 @@ module Devpack
     def activate(name, version)
       spec = GemSpec.new(@gem_glob, name, version)
       update_load_path(spec.require_paths)
-      loaded = Kernel.require(name)
+      # NOTE: do this before we require, because some gems use the gemspec to
+      # declare their version...
       Gem.loaded_specs[name] = spec.gemspec
+      loaded = Kernel.require(name)
       spec.gemspec&.activated = true
       spec.gemspec&.instance_variable_set(:@loaded, true)
       loaded
+    end
+
+    def deactivate(name)
+      Gem.loaded_specs.delete(name)
     end
 
     def warn(message)
