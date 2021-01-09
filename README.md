@@ -4,23 +4,7 @@ Include a single gem in your `Gemfile` to allow developers to optionally include
 
 ## Installation
 
-Add the gem to your `Gemfile`:
-
-```ruby
-group :development, :test do
-  gem 'devpack', '~> 0.3.1'
-end
-```
-
-And rebuild your bundle:
-
-```bash
-$ bundle install
-```
-
-## Usage
-
-Create a file named `.devpack` in your project's directory:
+Create a file named `.devpack` in your project's directory, or in any parent directory:
 
 ```
 # .devpack
@@ -32,18 +16,34 @@ better_errors
 pry:0.13.1
 ```
 
-All listed gems will be automatically required when _Devpack_ is loaded.
+Add _Devpack_ to any project's `Gemfile`:
 
-If your gems are not auto-loaded (e.g. by _Rails_) then you must require the gem:
+```ruby
+# Gemfile
+group :development, :test do
+  gem 'devpack', '~> 0.3.2'
+end
+```
+
+Rebuild your bundle:
+
+```bash
+bundle install
+```
+
+## Usage
+
+Load _Devpack_ (if your gems are not auto-loaded as in e.g. a _Rails_ application environment):
+
 ```ruby
 require 'devpack'
 ```
 
-Any gems that fail to load (due to `LoadError`) will generate a warning.
+_Devpack_ will attempt to load all configured gems immediately, providing feedback to _stderr_. All dependencies are loaded with `require` after being recursively verified for compatibily with bundled gems before loading.
 
-All dependencies are recursively verified for compatibily before loading. If no compatible version can be located then the gem will not be loaded.
+It is recommended to use a [global configuration](#global-configuration).
 
-It is recommended that `.devpack` is added to your `.gitignore`.
+When using a per-project configuration, `.devpack` files should be added to `.gitignore`.
 
 ### Initializers
 
@@ -70,7 +70,7 @@ Bullet.enable = true
 ```
 
 ### Global Configuration
-
+<a name="global-configuration"></a>
 To configure globally simply save your `.devpack` configuration file to any parent directory of your project directory, e.g. `~/.devpack`.
 
 This strategy also applies to `.devpack_initializers`.

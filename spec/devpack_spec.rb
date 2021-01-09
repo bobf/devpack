@@ -7,13 +7,17 @@ RSpec.describe Devpack do
 
   describe '.warn' do
     it 'calls Kernel.warn with a prefix' do
-      expect(Kernel).to receive(:warn).with("[devpack] \e[0;34mℹ\e[0;39m a warning message")
+      expect(Kernel).to receive(:warn).with(
+        "\e[34m[\e[39mdevpack\e[34m]\e[39m \e[36mℹ\e[39m a warning message"
+      )
       described_class.warn(:info, 'a warning message')
     end
 
     it 'prefixes multiple lines' do
       expect(Kernel).to receive(:warn).with(
-        "[devpack] \e[0;34mℹ\e[0;39m line1\n[devpack] \e[0;34mℹ\e[0;39m line2\n[devpack] \e[0;34mℹ\e[0;39m line3"
+        ["\e[34m[\e[39mdevpack\e[34m]\e[39m \e[36mℹ\e[39m line1",
+         "\e[34m[\e[39mdevpack\e[34m]\e[39m \e[36mℹ\e[39m line2",
+         "\e[34m[\e[39mdevpack\e[34m]\e[39m \e[36mℹ\e[39m line3"].join("\n")
       )
       described_class.warn(:info, "line1\nline2\nline3")
     end
