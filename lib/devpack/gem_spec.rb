@@ -12,7 +12,7 @@ module Devpack
     end
 
     def require_paths(visited = Set.new)
-      raise LoadError, Messages.no_compatible_version(@dependency) if gemspec.nil?
+      raise GemNotFoundError, @requirement.nil? ? '-' : required_version if gemspec.nil?
 
       (immediate_require_paths + dependency_require_paths(visited)).compact.flatten.uniq
     end
@@ -39,6 +39,10 @@ module Devpack
       return false if matched.nil?
 
       matched.version != spec.version
+    end
+
+    def required_version
+      @requirement.requirements.first.last.version
     end
 
     def compatible_specs?(specs, dependencies)

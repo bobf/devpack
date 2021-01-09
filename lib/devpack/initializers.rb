@@ -15,7 +15,7 @@ module Devpack
       return if path.nil?
 
       args = path, initializers, time.round(2)
-      Devpack.warn(Messages.loaded_initializers(*args))
+      Devpack.warn(:success, Messages.loaded_initializers(*args))
     end
 
     private
@@ -27,7 +27,7 @@ module Devpack
     def load_initializer(path)
       require path
     rescue ScriptError, StandardError => e
-      Devpack.warn(Messages.initializer_failure(path, message(e)))
+      Devpack.warn(:error, Messages.initializer_failure(path, message(e)))
       nil
     end
 

@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = 'Allow developers to optionally include a set of development gems without adding to the Gemfile.'
   spec.homepage      = 'https://github.com/bobf/devpack'
   spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.3.0')
+  spec.required_ruby_version = Gem::Requirement.new('>= 2.5.0')
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'byebug', '~> 11.1'
   spec.add_development_dependency 'rspec', '~> 3.9'
   spec.add_development_dependency 'rspec-its', '~> 1.3'
-  spec.add_development_dependency 'rubocop', '~> 0.88.0'
+  spec.add_development_dependency 'rubocop', '~> 1.8'
+  spec.add_development_dependency 'rubocop-rspec', '~> 2.1'
   spec.add_development_dependency 'strong_versions', '~> 0.4.4'
 end

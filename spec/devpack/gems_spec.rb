@@ -62,20 +62,31 @@ RSpec.describe Devpack::Gems do
 
       context 'with some specified gems not installed' do
         let(:requested_gems) { installed_gems + not_installed_gems }
-        before { expect(Devpack).to receive(:warn).exactly(4).times }
-        it { is_expected.to eql installed_gems }
+        it 'provides list of installed gems' do
+          allow(Devpack).to receive(:warn)
+          expect(subject).to eql installed_gems
+        end
+
+        it 'provides installation instructions for missing gems' do
+          expect(Devpack).to receive(:warn).once do |message|
+            puts message
+          end
+          expect(Devpack).to receive(:warn).once
+          subject
+        end
       end
 
       context 'with missing gems and DEVPACK_DEBUG enabled' do
         let(:requested_gems) { %w[not_installed1] }
         before { allow(Devpack).to receive(:debug?) { true } }
         it 'issues a warning including error and traceback' do
-          expect(Devpack).to receive(:warn).at_least(:once).with(any_args) do |message|
-            next if message.start_with?('Loaded 0 development gem(s)')
+          expect(Devpack).to receive(:warn).at_least(:once).with(any_args) do |_level, message|
+            next if message.include?('Loaded 0 development gem(s)')
+            next if message.include?('Install 1 missing gem(s)')
 
             [
               'Failed to load',
-              'No compatible version found for `>= 0`',
+              'Devpack::GemNotFoundError',
               '/devpack/lib/devpack/gems.rb',
               "`activate'",
               "`load_gem'"

@@ -8,6 +8,8 @@ module Devpack
     def initialize(config, glob = GemGlob.new)
       @config = config
       @gem_glob = glob
+      @failures = []
+      @missing = []
     end
 
     def load
@@ -15,11 +17,19 @@ module Devpack
 
       gems, time = timed { load_devpack }
       names = gems.map(&:first)
-      warn(Messages.loaded(@config.devpack_path, gems, time.round(2)))
+      summarize(gems, time)
       names
     end
 
     private
+
+    def summarize(gems, time)
+      @failures.each do |failure|
+        warn(:error, Messages.failure(failure[:name], failure[:message]))
+      end
+      warn(:success, Messages.loaded(@config.devpack_path, gems, time.round(2)))
+      warn(:info, Messages.install_missing(@missing)) unless @missing.empty?
+    end
 
     def load_devpack
       @config.requested_gems.map do |requested|
@@ -32,7 +42,10 @@ module Devpack
       [name, activate(name, requirement)]
     rescue LoadError => e
       deactivate(name)
-      warn(Messages.failure(name, load_error_message(e)))
+      @failures << { name: name, message: load_error_message(e) }
+      nil
+    rescue GemNotFoundError => e
+      @missing << { name: name, version: e.message == '-' ? nil : e.message }
       nil
     end
 
@@ -52,8 +65,8 @@ module Devpack
       Gem.loaded_specs.delete(name)
     end
 
-    def warn(message)
-      Devpack.warn(message)
+    def warn(level, message)
+      Devpack.warn(level, message)
     end
 
     def load_error_message(error)

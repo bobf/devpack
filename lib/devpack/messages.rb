@@ -25,14 +25,22 @@ module Devpack
         "Loaded #{initializers.compact.size} initializer(s) from '#{path}' in #{time} seconds"
       end
 
-      def no_compatible_version(dependency)
-        "No compatible version found for `#{dependency.requirement}`"
+      def install_missing(missing)
+        gems = missing.map do |spec|
+          spec[:version].nil? ? spec[:name] : "#{spec[:name]}==#{spec[:version]}"
+        end
+
+        "Install #{missing.size} missing gem(s): #{command(gems)}"
       end
 
       private
 
       def indented(message)
         message.split("\n").map { |line| "  #{line}" }.join("\n")
+      end
+
+      def command(gems)
+        "bundle exec gem install #{gems.join(' ')}"
       end
     end
   end

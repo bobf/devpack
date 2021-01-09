@@ -17,9 +17,11 @@ require 'devpack/version'
 module Devpack
   class Error < StandardError; end
 
+  class GemNotFoundError < Error; end
+
   class << self
-    def warn(message)
-      prefixed = message.split("\n").map { |line| "[devpack] #{line}" }.join("\n")
+    def warn(level, message)
+      prefixed = message.split("\n").map { |line| "#{prefix(level)} #{line}" }.join("\n")
       Kernel.warn(prefixed)
     end
 
@@ -37,6 +39,14 @@ module Devpack
 
     def config
       @config ||= Devpack::Config.new(Dir.pwd)
+    end
+
+    private
+
+    def prefix(level)
+      color = { success: '32', info: '36', error: '31' }.fetch(level)
+      icon = { success: '✓', info: 'ℹ', error: '✗' }.fetch(level)
+      "\e[34m[\e[39mdevpack\e[34m]\e[39m \e[#{color}m#{icon}\e[39m"
     end
   end
 end

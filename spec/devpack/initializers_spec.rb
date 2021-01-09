@@ -85,7 +85,7 @@ RSpec.describe Devpack::Initializers do
         expect(Devpack)
           .to receive(:warn)
           .at_least(:once)
-          .with("Failed to load initializer `#{initializer_paths.first}`: (#{error})")
+          .with(:error, "Failed to load initializer `#{initializer_paths.first}`: (#{error})")
         subject
       end
     end
@@ -107,7 +107,7 @@ RSpec.describe Devpack::Initializers do
                  "`method_name_that_does_not_exist' for main:Object)"].join
         expect(Devpack)
           .to receive(:warn)
-          .with("Failed to load initializer `#{initializer_paths.first}`: #{error}")
+          .with(:error, "Failed to load initializer `#{initializer_paths.first}`: #{error}")
         subject
       end
 
@@ -118,7 +118,7 @@ RSpec.describe Devpack::Initializers do
           expect(Devpack)
             .to receive(:warn)
             .at_least(:once)
-            .with(any_args) do |message|
+            .with(any_args) do |_level, message|
               next if message.start_with?('Loaded')
 
               ["/lib/devpack/initializers.rb:28:in `require'",
