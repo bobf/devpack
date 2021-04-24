@@ -30,7 +30,16 @@ module Devpack
           spec[:version].nil? ? spec[:name] : "#{spec[:name]}==#{spec[:version]}"
         end
 
-        "Install #{missing.size} missing gem(s): #{command(gems)}"
+        "Install #{missing.size} missing gem(s): #{color(:cyan) { command(gems) }}"
+      end
+
+      def test
+        puts "#{color(:green) { 'green' }} #{color(:red) { 'red' }} #{color(:blue) { 'blue' }}"
+        puts "#{color(:cyan) { 'cyan' }} #{color(:yellow) { 'yellow' }} #{color(:magenta) { 'magenta' }}"
+      end
+
+      def color(name)
+        "#{palette.fetch(name)}#{yield}#{palette.fetch(:reset)}"
       end
 
       private
@@ -41,6 +50,18 @@ module Devpack
 
       def command(gems)
         "bundle exec gem install #{gems.join(' ')}"
+      end
+
+      def palette
+        {
+          reset: "\e[39m",
+          red: "\e[31m",
+          green: "\e[32m",
+          yellow: "\e[33m",
+          blue: "\e[34m",
+          magenta: "\e[35m",
+          cyan: "\e[36m"
+        }
       end
     end
   end

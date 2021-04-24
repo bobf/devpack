@@ -44,9 +44,15 @@ module Devpack
     private
 
     def prefix(level)
-      color = { success: '32', info: '36', error: '31' }.fetch(level)
-      icon = { success: '✓', info: 'ℹ', error: '✗' }.fetch(level)
-      "\e[34m[\e[39mdevpack\e[34m]\e[39m \e[#{color}m#{icon}\e[39m"
+      "#{Messages.color(:blue) { '[' }}devpack#{Messages.color(:blue) { ']' }} #{icon(level)}"
+    end
+
+    def icon(level)
+      {
+        success: Messages.color(:green) { '✓' },
+        info: Messages.color(:cyan) { 'ℹ' },
+        error: Messages.color(:red) { '✗' }
+      }.fetch(level)
     end
   end
 end
