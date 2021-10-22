@@ -16,9 +16,9 @@ module Devpack
     end
 
     def gem_paths
-      return [] unless ENV.key?('GEM_PATH')
+      return [] if gem_path.nil?
 
-      ENV.fetch('GEM_PATH').split(':').map { |path| Pathname.new(path) }
+      gem_path.split(':').map { |path| Pathname.new(path) }
     end
 
     def match?(name_with_version, basename)
@@ -41,6 +41,13 @@ module Devpack
 
     def version(path)
       Gem::Version.new(File.split(path).last.rpartition('-').last)
+    end
+
+    def gem_path
+      return ENV['GEM_PATH'] if ENV.key?('GEM_PATH')
+      return ENV['GEM_HOME'] if ENV.key?('GEM_HOME')
+
+      nil
     end
   end
 end
