@@ -6,3 +6,7 @@ AllCops:
   NewCops: enable
   Exclude:
   - "spec/fixtures/**/*"
+
+Bundler/GemFilename:
+  Exclude:
+  - "lib/devpack/gems.rb"

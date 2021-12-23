@@ -5,6 +5,8 @@ module Devpack
   class Gems
     include Timeable
 
+    attr_reader :missing
+
     def initialize(config, glob = GemGlob.new)
       @config = config
       @gem_glob = glob
@@ -12,12 +14,12 @@ module Devpack
       @missing = []
     end
 
-    def load
+    def load(silent: false)
       return [] if @config.requested_gems.nil?
 
       gems, time = timed { load_devpack }
       names = gems.map(&:first)
-      summarize(gems, time)
+      summarize(gems, time) unless silent
       names
     end
 
@@ -34,7 +36,7 @@ module Devpack
     def load_devpack
       @config.requested_gems.map do |requested|
         name, _, version = requested.partition(':')
-        load_gem(name, version.empty? ? nil : Gem::Requirement.new("= #{version}"))
+        load_gem(name, version.empty? ? nil : Gem::Requirement.new(version))
       end.compact
     end
 
@@ -45,7 +47,7 @@ module Devpack
       @failures << { name: name, message: load_error_message(e) }
       nil
     rescue GemNotFoundError => e
-      @missing << { name: name, version: e.message == '-' ? nil : e.message }
+      @missing << e.message
       nil
     end
 

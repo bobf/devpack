@@ -26,11 +26,7 @@ module Devpack
       end
 
       def install_missing(missing)
-        gems = missing.map do |spec|
-          spec[:version].nil? ? spec[:name] : "#{spec[:name]}==#{spec[:version]}"
-        end
-
-        "Install #{missing.size} missing gem(s): #{color(:cyan) { command(gems) }}"
+        "Install #{missing.size} missing gem(s): #{color(:cyan) { command(missing) }}"
       end
 
       def test

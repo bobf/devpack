@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+ENV['DEVPACK_DISABLE'] = '1'
+
+require 'devpack'
+
+command = ARGV[0]
+
+if command == 'install'
+  missing = Devpack::Gems.new(Devpack.config).tap { |gems| gems.load(silent: true) }.missing
+  install_command = "bundle exec gem install #{missing.join(' ')}" unless missing.empty?
+  if install_command.nil?
+    warn 'No gems to install.'
+  else
+    warn "[exec] #{install_command}"
+    Kernel.exec install_command
+  end
+  exit 0
+end
+
+warn "Unknown command: #{command}"
+exit 1
