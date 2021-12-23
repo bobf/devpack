@@ -26,7 +26,7 @@ module Devpack
       end
 
       def install_missing(missing)
-        "Install #{missing.size} missing gem(s): #{color(:cyan) { command(missing) }}"
+        "Install #{missing.size} missing gem(s): #{color(:cyan) { 'bundle exec devpack install' }}"
       end
 
       def test

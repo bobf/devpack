@@ -12,7 +12,6 @@ module Devpack
     end
 
     def require_paths(visited = Set.new)
-      return [] if bundler?
       raise GemNotFoundError, required_version if gemspec.nil?
 
       (immediate_require_paths + dependency_require_paths(visited)).compact.flatten.uniq
@@ -27,10 +26,6 @@ module Devpack
     end
 
     private
-
-    def bundler?
-      @name == 'bundler'
-    end
 
     def compatible?(spec)
       return false if spec.nil?
@@ -47,15 +42,18 @@ module Devpack
     end
 
     def required_version
-      version.nil? ? @name : "'#{@name}:#{operator}#{version}'"
+      spec = @requirement
+        &.requirements
+        &.find { |requirement| requirements_satisfied_by?(requirement.last) }
+
+      return "'#{@name}'" if spec.nil?
+
+
+      "'#{@name}:#{spec.last.version}'"
     end
 
-    def version
-      @requirement&.requirements&.first&.last&.version
-    end
-
-    def operator
-      @requirement&.requirements&.first&.first
+    def requirements_satisfied_by?(version)
+      @dependency.requirement.satisfied_by?(version)
     end
 
     def compatible_specs?(specs, dependencies)

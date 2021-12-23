@@ -45,6 +45,14 @@ It is recommended to use a [global configuration](#global-configuration).
 
 When using a per-project configuration, `.devpack` files should be added to `.gitignore`.
 
+### Gem Installation
+
+A convenience command is provided to install all gems listed in `.devpack` file that are not already installed:
+
+```ruby
+bundle exec devpack install
+```
+
 ### Initializers
 
 Custom initializers can be loaded by creating a directory named `.devpack_initializers` containing a set of `.rb` files.
