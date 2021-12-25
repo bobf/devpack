@@ -26,7 +26,18 @@ module Devpack
       end
 
       def install_missing(missing)
-        "Install #{missing.size} missing gem(s): #{color(:cyan) { 'bundle exec devpack install' }}"
+        command = color(:cyan) { 'bundle exec devpack install' }
+        "Install #{missing.size} missing gem(s): #{command} [#{color(:yellow) { missing.join(', ') }}]"
+      end
+
+      def alert_incompatible(incompatible)
+        grouped_dependencies = {}
+        incompatible.each do |spec, dependencies|
+          key = spec.root.pretty_name
+          grouped_dependencies[key] ||= []
+          grouped_dependencies[key] << dependencies
+        end
+        alert_incompatible_message(grouped_dependencies)
       end
 
       def test
@@ -46,6 +57,15 @@ module Devpack
 
       def command(gems)
         "bundle exec gem install #{gems.join(' ')}"
+      end
+
+      def alert_incompatible_message(grouped_dependencies)
+        incompatible_dependencies = grouped_dependencies.sort.map do |name, dependencies|
+          "#{color(:cyan) { name }}: "\
+            "#{dependencies.flatten.map { |dependency| color(:yellow) { dependency.to_s } }.join(', ')}"
+        end.join(', ')
+        "Unable to resolve version conflicts for #{incompatible_dependencies.size} "\
+          "dependencies: #{incompatible_dependencies}}"
       end
 
       def palette

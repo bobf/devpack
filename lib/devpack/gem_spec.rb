@@ -4,10 +4,13 @@ module Devpack
   # Locates relevant gemspec for a given gem and provides a full list of paths
   # for all `require_paths` listed in gemspec.
   class GemSpec
-    def initialize(glob, name, requirement)
+    attr_reader :name, :root
+
+    def initialize(glob, name, requirement, root: nil)
       @name = name
       @glob = glob
       @requirement = requirement
+      @root = root || self
       @dependency = Gem::Dependency.new(@name, @requirement)
     end
 
@@ -21,8 +24,16 @@ module Devpack
       @gemspec ||= gemspecs.find do |spec|
         next false if spec.nil?
 
-        @dependency.requirement.satisfied_by?(spec.version) && compatible?(spec)
+        raise_incompatible(spec) unless compatible?(spec)
+
+        @dependency.requirement.satisfied_by?(spec.version)
       end
+    end
+
+    def pretty_name
+      return @name.to_s if @requirement.nil?
+
+      "#{@name} #{@requirement}"
     end
 
     private
@@ -31,37 +42,51 @@ module Devpack
       return false if spec.nil?
       return false if incompatible_version_loaded?(spec)
 
-      compatible_specs?(Gem.loaded_specs.values, [@dependency] + spec.runtime_dependencies)
+      compatible_specs?([@dependency] + spec.runtime_dependencies)
     end
 
     def incompatible_version_loaded?(spec)
       matched = Gem.loaded_specs[spec.name]
       return false if matched.nil?
 
-      matched.version != spec.version
+      !matched.satisfies_requirement?(@dependency)
+    end
+
+    def raise_incompatible(spec)
+      raise GemIncompatibilityError.new('Incompatible dependencies', incompatible_dependencies(spec))
     end
 
     def required_version
-      spec = @requirement
-        &.requirements
-        &.find { |requirement| requirements_satisfied_by?(requirement.last) }
+      compatible_spec = gemspecs.find { |spec| requirements_satisfied_by?(spec.version) }
+      return @name.to_s if compatible_spec.nil? && @requirement.nil?
+      return "#{@name}:#{compatible_version}" if compatible_spec.nil?
 
-      return "'#{@name}'" if spec.nil?
+      "#{@name}:#{compatible_spec.version}"
+    end
 
-
-      "'#{@name}:#{spec.last.version}'"
+    def compatible_version
+      @requirement.requirements.find { |_operator, version| @requirement.satisfied_by?(version) }.last
     end
 
     def requirements_satisfied_by?(version)
       @dependency.requirement.satisfied_by?(version)
     end
 
-    def compatible_specs?(specs, dependencies)
-      specs.all? { |spec| compatible_dependencies?(dependencies, spec) }
+    def compatible_specs?(dependencies)
+      Gem.loaded_specs.values.all? { |spec| compatible_dependencies?(dependencies, spec) }
     end
 
     def compatible_dependencies?(dependencies, spec)
       dependencies.all? { |dependency| compatible_dependency?(dependency, spec) }
+    end
+
+    def incompatible_dependencies(spec)
+      dependencies = [@dependency] + spec.runtime_dependencies
+      Gem.loaded_specs.map do |_name, loaded_spec|
+        next nil if compatible_dependencies?(dependencies, loaded_spec)
+
+        [@root, dependencies.reject { |dependency| compatible_dependency?(dependency, loaded_spec) }]
+      end.compact
     end
 
     def compatible_dependency?(dependency, spec)
@@ -80,7 +105,7 @@ module Devpack
         next nil if visited.include?(dependency)
 
         visited << dependency
-        GemSpec.new(@glob, dependency.name, dependency.requirement).require_paths(visited)
+        GemSpec.new(@glob, dependency.name, dependency.requirement, root: @root).require_paths(visited)
       end
     end
 

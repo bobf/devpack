@@ -12,6 +12,7 @@ module Devpack
       @gem_glob = glob
       @failures = []
       @missing = []
+      @incompatible = []
     end
 
     def load(silent: false)
@@ -31,6 +32,7 @@ module Devpack
       end
       warn(:success, Messages.loaded(@config.devpack_path, gems, time.round(2)))
       warn(:info, Messages.install_missing(@missing)) unless @missing.empty?
+      warn(:info, Messages.alert_incompatible(@incompatible.flatten(1))) unless @incompatible.empty?
     end
 
     def load_devpack
@@ -44,11 +46,11 @@ module Devpack
       [name, activate(name, requirement)]
     rescue LoadError => e
       deactivate(name)
-      @failures << { name: name, message: load_error_message(e) }
-      nil
+      nil.tap { @failures << { name: name, message: load_error_message(e) } }
     rescue GemNotFoundError => e
-      @missing << e.message
-      nil
+      nil.tap { @missing << e.message }
+    rescue GemIncompatibilityError => e
+      nil.tap { @incompatible << e.meta }
     end
 
     def activate(name, version)
