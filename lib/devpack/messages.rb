@@ -63,9 +63,9 @@ module Devpack
         incompatible_dependencies = grouped_dependencies.sort.map do |name, dependencies|
           "#{color(:cyan) { name }}: "\
             "#{dependencies.flatten.map { |dependency| color(:yellow) { dependency.to_s } }.join(', ')}"
-        end.join(', ')
+        end
         "Unable to resolve version conflicts for #{incompatible_dependencies.size} "\
-          "dependencies: #{incompatible_dependencies}}"
+          "dependencies: #{incompatible_dependencies.join(', ')}}"
       end
 
       def palette
