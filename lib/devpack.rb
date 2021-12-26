@@ -31,6 +31,8 @@ module Devpack
 
   class << self
     def warn(level, message)
+      return if silent?
+
       prefixed = message.split("\n").map { |line| "#{prefix(level)} #{line}" }.join("\n")
       Kernel.warn(prefixed)
     end
@@ -41,6 +43,10 @@ module Devpack
 
     def disabled?
       ENV.key?('DEVPACK_DISABLE')
+    end
+
+    def silent?
+      ENV.key?('DEVPACK_SILENT')
     end
 
     def rails?

@@ -83,6 +83,13 @@ To configure globally simply save your `.devpack` configuration file to any pare
 
 This strategy also applies to `.devpack_initializers`.
 
+### Silencing
+
+To prevent _Devpack_ from displaying messages on load, set the environment variable `DEVPACK_SILENT=1` to any value:
+```bash
+DEVPACK_SILENT=1 bundle exec ruby myapp.rb
+```
+
 ### Disabling
 
 To disable _Devpack_ set the environment variable `DEVPACK_DISABLE` to any value:
