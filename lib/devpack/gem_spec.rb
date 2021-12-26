@@ -3,6 +3,7 @@
 module Devpack
   # Locates relevant gemspec for a given gem and provides a full list of paths
   # for all `require_paths` listed in gemspec.
+  # rubocop:disable Metrics/ClassLength
   class GemSpec
     attr_reader :name, :root
 
@@ -15,12 +16,14 @@ module Devpack
     end
 
     def require_paths(visited = Set.new)
-      raise GemNotFoundError, required_version if gemspec.nil?
+      raise GemNotFoundError.new("Gem not found: #{required_version}", self) if gemspec.nil?
 
       (immediate_require_paths + dependency_require_paths(visited)).compact.flatten.uniq
     end
 
     def gemspec
+      return Gem.loaded_specs[@name] if compatible?(Gem.loaded_specs[@name])
+
       @gemspec ||= gemspecs.find do |spec|
         next false if spec.nil?
 
@@ -36,6 +39,17 @@ module Devpack
       "#{@name} #{@requirement}"
     end
 
+    def root?
+      self == @root
+    end
+
+    def required_version
+      return @name.to_s if compatible_spec.nil? && @requirement.nil?
+      return "#{@name}:#{compatible_version}" if compatible_spec.nil?
+
+      "#{@name}:#{compatible_spec.version}"
+    end
+
     private
 
     def compatible?(spec)
@@ -43,6 +57,12 @@ module Devpack
       return false if incompatible_version_loaded?(spec)
 
       compatible_specs?([@dependency] + spec.runtime_dependencies)
+    end
+
+    def compatible_spec
+      @compatible_spec ||= gemspecs.compact
+                                   .select { |spec| requirements_satisfied_by?(spec.version) }
+                                   .max_by(&:version)
     end
 
     def incompatible_version_loaded?(spec)
@@ -54,14 +74,6 @@ module Devpack
 
     def raise_incompatible(spec)
       raise GemIncompatibilityError.new('Incompatible dependencies', incompatible_dependencies(spec))
-    end
-
-    def required_version
-      compatible_spec = gemspecs.find { |spec| requirements_satisfied_by?(spec.version) }
-      return @name.to_s if compatible_spec.nil? && @requirement.nil?
-      return "#{@name}:#{compatible_version}" if compatible_spec.nil?
-
-      "#{@name}:#{compatible_spec.version}"
     end
 
     def compatible_version
@@ -137,4 +149,5 @@ module Devpack
       @candidates ||= @glob.find(@name)
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end

@@ -48,7 +48,7 @@ module Devpack
       deactivate(name)
       nil.tap { @failures << { name: name, message: load_error_message(e) } }
     rescue GemNotFoundError => e
-      nil.tap { @missing << e.message }
+      nil.tap { @missing << e.meta }
     rescue GemIncompatibilityError => e
       nil.tap { @incompatible << e.meta }
     end

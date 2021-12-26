@@ -3,18 +3,23 @@
 
 ENV['DEVPACK_DISABLE'] = '1'
 
+require 'open3'
+
 require 'devpack'
 
 command = ARGV[0]
 
 if command == 'install'
   missing = Devpack::Gems.new(Devpack.config).tap { |gems| gems.load(silent: true) }.missing
-  install_command = "bundle exec gem install #{missing.join(' ')}" unless missing.empty?
+  install_command = "bundle exec gem install -V #{missing.map(&:required_version).join(' ')}" unless missing.empty?
   if install_command.nil?
     warn 'No gems to install.'
   else
     warn "[exec] #{install_command}"
-    Kernel.exec install_command
+    output, status = Open3.capture2e(install_command)
+    puts output
+    puts status
+    warn 'Installation complete.' if status.success?
   end
   exit 0
 end

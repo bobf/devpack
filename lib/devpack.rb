@@ -15,11 +15,8 @@ require 'devpack/version'
 
 # Provides helper method for writing warning messages.
 module Devpack
-  class Error < StandardError; end
-  class GemNotFoundError < Error; end
-
-  # Retains gem specification and unavailable dependencies for use in output messages.
-  class GemIncompatibilityError < Error
+  # Base class for all Devpack errors. Accepts additional argument `meta` to store object info.
+  class Error < StandardError
     attr_reader :message, :meta
 
     def initialize(message = nil, meta = nil)
@@ -28,6 +25,9 @@ module Devpack
       super(message)
     end
   end
+
+  class GemNotFoundError < Error; end
+  class GemIncompatibilityError < Error; end
 
   class << self
     def warn(level, message)

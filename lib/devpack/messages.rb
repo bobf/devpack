@@ -27,7 +27,15 @@ module Devpack
 
       def install_missing(missing)
         command = color(:cyan) { 'bundle exec devpack install' }
-        "Install #{missing.size} missing gem(s): #{command} [#{color(:yellow) { missing.join(', ') }}]"
+        grouped_missing = missing
+                          .group_by(&:root)
+                          .map do |root, dependencies|
+          next (color(:cyan) { root.pretty_name }).to_s if dependencies.all?(&:root?)
+
+          formatted_dependencies = dependencies.map { |dependency| color(:yellow) { dependency.pretty_name } }
+          "#{color(:cyan) { root.pretty_name }}: #{formatted_dependencies.join(', ')}"
+        end
+        "Install #{missing.size} missing gem(s): #{command} # [#{grouped_missing.join(', ')}]"
       end
 
       def alert_incompatible(incompatible)
