@@ -27,10 +27,8 @@ module Devpack
     private
 
     def summarize(gems, time)
-      @failures.each do |failure|
-        warn(:error, Messages.failure(failure[:name], failure[:message]))
-      end
-      warn(:success, Messages.loaded(@config.devpack_path, gems, @config.requested_gems, time.round(2)))
+      @failures.each { |failure| warn(:error, Messages.failure(failure[:name], failure[:message])) }
+      warn(:success, Messages.loaded(@config, gems, time.round(2)))
       warn(:info, Messages.install_missing(@missing)) unless @missing.empty?
       warn(:info, Messages.alert_incompatible(@incompatible.flatten(1))) unless @incompatible.empty?
     end

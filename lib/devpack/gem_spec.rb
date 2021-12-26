@@ -77,7 +77,7 @@ module Devpack
     end
 
     def compatible_version
-      @requirement.requirements.find { |_operator, version| @requirement.satisfied_by?(version) }.last
+      @requirement.requirements.map(&:last).max_by { |version| @requirement.satisfied_by?(version) }
     end
 
     def requirements_satisfied_by?(version)

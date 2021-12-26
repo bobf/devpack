@@ -13,17 +13,20 @@ module Devpack
         "Failed to load initializer `#{path}`: #{error_message}"
       end
 
-      def loaded(path, gems, requested_gems, time)
-        loaded = gems.size - gems.reject { |_, loaded| loaded }.size
-        of_total = gems.size == requested_gems.size ? nil : " of #{color(:cyan) { requested_gems.size }}"
-        base = "Loaded #{color(:green) { loaded }}#{of_total} development gem(s) from #{color(:cyan) { path }} in #{time} seconds"
+      # rubocop:disable Metrics/AbcSize
+      def loaded(config, gems, time)
+        loaded = gems.size - gems.reject { |_, devpack_loaded| devpack_loaded }.size
+        of_total = gems.size == config.requested_gems.size ? nil : " of #{color(:cyan) { config.requested_gems.size }}"
+        path = color(:cyan) { config.devpack_path }
+        base = "Loaded #{color(:green) { loaded }}#{of_total} development gem(s) from #{path} in #{time} seconds"
         return "#{base}." if loaded == gems.size
 
         "#{base} (#{color(:cyan) { gems.size - loaded }} gem(s) were already loaded by environment)."
       end
+      # rubocop:enable Metrics/AbcSize
 
       def loaded_initializers(path, initializers, time)
-        "Loaded #{color(:green) { initializers.compact.size } } initializer(s) from '#{path}' in #{time} seconds"
+        "Loaded #{color(:green) { initializers.compact.size }} initializer(s) from '#{path}' in #{time} seconds"
       end
 
       def install_missing(missing)

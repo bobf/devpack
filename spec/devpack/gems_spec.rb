@@ -81,7 +81,7 @@ RSpec.describe Devpack::Gems do
         before { allow(Devpack).to receive(:debug?) { true } }
         it 'issues a warning including error and traceback' do
           expect(Devpack).to receive(:warn).at_least(:once).with(any_args) do |_level, message|
-            next if message.include?('Loaded 0 development gem(s)')
+            next if message.include?('development gem(s)')
             next if message.include?('Install 1 missing gem(s)')
 
             [
