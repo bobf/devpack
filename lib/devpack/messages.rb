@@ -13,16 +13,17 @@ module Devpack
         "Failed to load initializer `#{path}`: #{error_message}"
       end
 
-      def loaded(path, gems, time)
-        already_loaded = gems.size - gems.reject { |_, loaded| loaded }.size
-        base = "Loaded #{already_loaded} development gem(s) from '#{path}' in #{time} seconds"
-        return "#{base}." if already_loaded == gems.size
+      def loaded(path, gems, requested_gems, time)
+        loaded = gems.size - gems.reject { |_, loaded| loaded }.size
+        of_total = gems.size == requested_gems.size ? nil : " of #{color(:cyan) { requested_gems.size }}"
+        base = "Loaded #{color(:green) { loaded }}#{of_total} development gem(s) from #{color(:cyan) { path }} in #{time} seconds"
+        return "#{base}." if loaded == gems.size
 
-        "#{base} (#{gems.size - already_loaded} gem(s) were already loaded by environment)."
+        "#{base} (#{color(:cyan) { gems.size - loaded }} gem(s) were already loaded by environment)."
       end
 
       def loaded_initializers(path, initializers, time)
-        "Loaded #{initializers.compact.size} initializer(s) from '#{path}' in #{time} seconds"
+        "Loaded #{color(:green) { initializers.compact.size } } initializer(s) from '#{path}' in #{time} seconds"
       end
 
       def install_missing(missing)
@@ -72,7 +73,7 @@ module Devpack
           "#{color(:cyan) { name }}: "\
             "#{dependencies.flatten.map { |dependency| color(:yellow) { dependency.to_s } }.join(', ')}"
         end
-        "Unable to resolve version conflicts for #{incompatible_dependencies.size} "\
+        "Unable to resolve version conflicts for #{color(:yellow) { incompatible_dependencies.size }} "\
           "dependencies: #{incompatible_dependencies.join(', ')}}"
       end
 
