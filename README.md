@@ -21,7 +21,7 @@ Add _Devpack_ to any project's `Gemfile`:
 ```ruby
 # Gemfile
 group :development, :test do
-  gem 'devpack', '~> 0.3.3'
+  gem 'devpack', '~> 0.4.0'
 end
 ```
 
