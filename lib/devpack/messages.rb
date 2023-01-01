@@ -52,6 +52,11 @@ module Devpack
         alert_incompatible_message(grouped_dependencies)
       end
 
+      def no_gems_to_install
+        "No gems to install: #{Devpack::Messages.color(:green) { Devpack.config.requested_gems.size.to_s }} "\
+          "gems already installed from #{Devpack::Messages.color(:cyan) { Devpack.config.devpack_path }}"
+      end
+
       def test
         puts "#{color(:green) { 'green' }} #{color(:red) { 'red' }} #{color(:blue) { 'blue' }}"
         puts "#{color(:cyan) { 'cyan' }} #{color(:yellow) { 'yellow' }} #{color(:magenta) { 'magenta' }}"
