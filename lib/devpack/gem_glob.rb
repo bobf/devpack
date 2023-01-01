@@ -44,8 +44,8 @@ module Devpack
     end
 
     def gem_path
-      return ENV['GEM_PATH'] if ENV.key?('GEM_PATH')
-      return ENV['GEM_HOME'] if ENV.key?('GEM_HOME')
+      return ENV.fetch('GEM_PATH', nil) if ENV.key?('GEM_PATH')
+      return ENV.fetch('GEM_HOME', nil) if ENV.key?('GEM_HOME')
 
       nil
     end

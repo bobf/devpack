@@ -1,32 +1,20 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-ENV['DEVPACK_DISABLE'] = '1'
+command = ARGV[0]
+
+ENV['DEVPACK_DISABLE'] = '1' if command == 'install'
 
 require 'open3'
 
 require 'devpack'
 
-command = ARGV[0]
-
-if command == 'install'
-  missing = Devpack::Gems.new(Devpack.config).tap { |gems| gems.load(silent: true) }.missing
-  install_command = "bundle exec gem install -V #{missing.map(&:required_version).join(' ')}" unless missing.empty?
-  if install_command.nil?
-    warn '[devpack] No gems to install.'
-  else
-    warn "[devpack] [exec] #{install_command}"
-    output, status = Open3.capture2e(install_command)
-    puts output
-    puts status
-    if status.success?
-      warn '[devpack] Installation complete.'
-    else
-      warn "[devpack] Installation failed. Manually verify this command: #{install_command}"
-    end
-  end
-  exit 0
+case command
+when 'install'
+  require 'devpack/install'
+when 'exec'
+  require 'devpack/exec'
+else
+  warn "[devpack] Unknown command: #{command}"
+  exit 1
 end
-
-warn "[devpack] Unknown command: #{command}"
-exit 1

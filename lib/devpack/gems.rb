@@ -79,6 +79,7 @@ module Devpack
 
     def update_load_path(paths)
       $LOAD_PATH.concat(paths)
+      ENV['RUBYLIB'] = $LOAD_PATH.join(':')
     end
   end
 end

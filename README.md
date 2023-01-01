@@ -49,8 +49,18 @@ When using a per-project configuration, `.devpack` files should be added to `.gi
 
 A convenience command is provided to install all gems listed in `.devpack` file that are not already installed:
 
-```ruby
+```bash
 bundle exec devpack install
+```
+
+### Executing Commands Provided by DevPack Gems
+
+Use the `exec` command to run a command provided by a gem installed via _Devpack_.
+
+An example use case of this is the [Guard](https://github.com/guard/guard) gem:
+
+```bash
+bundle exec devpack exec guard
 ```
 
 ### Initializers
