@@ -27,7 +27,11 @@ RSpec.describe Devpack::Gems do
     let(:not_installed_gems) { %w[not_installed1 not_installed2 not_installed3] }
 
     let(:gem_refs_to_require) { installed_gems_require.map { |name| Devpack::GemRef.parse(name) } }
-    let(:gem_refs_no_require) { installed_gems_no_require.map { |name| Devpack::GemRef.new(name: name, no_require: true) } }
+    let(:gem_refs_no_require) do
+      installed_gems_no_require.map do |name|
+        Devpack::GemRef.new(name: name, no_require: true)
+      end
+    end
     let(:gem_refs) { gem_refs_to_require + gem_refs_no_require }
     let(:not_installed_gem_refs) { not_installed_gems.map { |name| Devpack::GemRef.parse(name) } }
 
@@ -71,7 +75,8 @@ RSpec.describe Devpack::Gems do
 
         it 'adds gemspec to Gem.loaded_specs' do
           subject
-          expect(loaded_gems.keys).to contain_exactly('installed1', 'installed2', 'installed3', 'installed4-module', 'installed_no_require1')
+          expect(loaded_gems.keys).to contain_exactly('installed1', 'installed2', 'installed3', 'installed4-module',
+                                                      'installed_no_require1')
         end
       end
 
@@ -82,7 +87,8 @@ RSpec.describe Devpack::Gems do
 
         it 'adds gemspec to Gem.loaded_specs' do
           subject
-          expect(loaded_gems.keys).to contain_exactly('installed1', 'installed2', 'installed3', 'installed4-module', 'installed_no_require1')
+          expect(loaded_gems.keys).to contain_exactly('installed1', 'installed2', 'installed3', 'installed4-module',
+                                                      'installed_no_require1')
         end
       end
 

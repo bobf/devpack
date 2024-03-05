@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module Devpack
+  # Provides extended syntax for gem definitions, allowing `require: false` semantics via an
+  # asterisrk prefix in `.devpack` file, e.g. `*my_gem`
   class GemRef
     def self.parse(line)
       name, _, version = line.partition(':')
