@@ -28,7 +28,14 @@ RSpec.describe Devpack::Config do
     after { FileUtils.rm_r(pwd) if File.exist?(pwd) }
 
     it { is_expected.to be_a described_class }
-    its(:requested_gems) { is_expected.to eql %w[gem1 gem2 gem3] }
+    its(:requested_gems) do
+      is_expected.to eql [
+        Devpack::GemRef.new(name: 'gem1', version: nil, no_require: false),
+        Devpack::GemRef.new(name: 'gem2', version: nil, no_require: false),
+        Devpack::GemRef.new(name: 'gem3', version: nil, no_require: false)
+      ]
+    end
+
     its(:devpack_path) { is_expected.to eql Pathname.new(config_path) }
     its(:devpack_initializers_path) do
       is_expected.to eql Pathname.new(File.join(pwd, '.devpack_initializers'))
@@ -75,11 +82,19 @@ RSpec.describe Devpack::Config do
           '  # an indented comment',
           '',
           'gem2', "\t # a tab-indented comment",
-          'gem3 # an in-line comment'
+          'gem3 # an in-line comment',
+          '*gem4 # will not be required'
         ]
       end
 
-      its(:requested_gems) { is_expected.to eql %w[gem1 gem2 gem3] }
+      its(:requested_gems) do
+        is_expected.to eql [
+          Devpack::GemRef.new(name: 'gem1', version: nil, no_require: false),
+          Devpack::GemRef.new(name: 'gem2', version: nil, no_require: false),
+          Devpack::GemRef.new(name: 'gem3', version: nil, no_require: false),
+          Devpack::GemRef.new(name: 'gem4', version: nil, no_require: true)
+        ]
+      end
     end
   end
 end

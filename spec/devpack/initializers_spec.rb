@@ -121,8 +121,7 @@ RSpec.describe Devpack::Initializers do
             .with(any_args) do |_level, message|
               next if message.start_with?('Loaded')
 
-              ["/lib/devpack/initializers.rb:28:in `require'",
-               "/lib/devpack/initializers.rb:28:in `load_initializer'",
+              ["/lib/devpack/initializers.rb:28:in `load_initializer'",
                "/lib/devpack/initializers.rb:24:in `block in load_initializers'",
                "/lib/devpack/initializers.rb:24:in `map'",
                "/lib/devpack/initializers.rb:24:in `load_initializers'",

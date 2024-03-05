@@ -17,6 +17,7 @@ module Devpack
       File.readlines(devpack_path)
           .map(&filter_comments)
           .compact
+          .map { |line| GemRef.parse(line) }
     end
 
     def devpack_path

@@ -14,6 +14,10 @@ better_errors
 
 # Optionally specify a version:
 pry:0.13.1
+
+# Or add an asterisk at the start of a line to not require the gem automatically:
+# (equivalent to adding `require: false` to the gem's entry in the Gemfile)
+*brakeman
 ```
 
 Add _Devpack_ to any project's `Gemfile`:
