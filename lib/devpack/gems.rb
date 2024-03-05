@@ -34,14 +34,14 @@ module Devpack
     end
 
     def load_devpack
-      @config.requested_gems.map do |requested|
-        name, _, version = requested.partition(':')
-        load_gem(name, version.empty? ? nil : Gem::Requirement.new(version))
+      @config.requested_gems.map do |gem|
+        load_gem(gem)
       end.compact
     end
 
-    def load_gem(name, requirement)
-      [name, activate(name, requirement)]
+    def load_gem(gem)
+      name = gem.name
+      [name, activate(gem)]
     rescue LoadError => e
       deactivate(name)
       nil.tap { @failures << { name: name, message: load_error_message(e) } }
@@ -51,16 +51,25 @@ module Devpack
       nil.tap { @incompatible << e.meta }
     end
 
-    def activate(name, version)
-      spec = GemSpec.new(@gem_glob, name, version)
+    def activate(gem)
+      spec = GemSpec.new(@gem_glob, gem.name, gem.version)
       update_load_path(spec.require_paths)
       # NOTE: do this before we require, because some gems use the gemspec to
       # declare their version...
-      Gem.loaded_specs[name] = spec.gemspec
-      loaded = Kernel.require(name)
+      Gem.loaded_specs[gem.name] = spec.gemspec
+      loaded = require_gem(gem.name) if gem.require?
       spec.gemspec&.activated = true
       spec.gemspec&.instance_variable_set(:@loaded, true)
       loaded
+    end
+
+    def require_gem(name)
+      Kernel.require(name)
+    rescue LoadError => e
+      raise e unless name.include?('-')
+
+      namespaced_file = name.tr('-', '/')
+      Kernel.require namespaced_file
     end
 
     def deactivate(name)

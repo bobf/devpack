@@ -6,6 +6,7 @@ require 'set'
 
 require 'devpack/timeable'
 require 'devpack/config'
+require 'devpack/gem_ref'
 require 'devpack/gems'
 require 'devpack/gem_glob'
 require 'devpack/gem_spec'

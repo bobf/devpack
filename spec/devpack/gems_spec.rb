@@ -21,8 +21,16 @@ RSpec.describe Devpack::Gems do
   describe '#load' do
     subject(:gems_load) { gems.load }
 
-    let(:installed_gems) { %w[installed1 installed2 installed3] }
+    let(:installed_gems_require) { %w[installed1 installed2 installed3 installed4-module] }
+    let(:installed_gems_no_require) { %w[installed_no_require1] }
+    let(:installed_gems) { installed_gems_require + installed_gems_no_require }
     let(:not_installed_gems) { %w[not_installed1 not_installed2 not_installed3] }
+
+    let(:gem_refs_to_require) { installed_gems_require.map { |name| Devpack::GemRef.parse(name) } }
+    let(:gem_refs_no_require) { installed_gems_no_require.map { |name| Devpack::GemRef.new(name: name, no_require: true) } }
+    let(:gem_refs) { gem_refs_to_require + gem_refs_no_require }
+    let(:not_installed_gem_refs) { not_installed_gems.map { |name| Devpack::GemRef.parse(name) } }
+
     let(:loaded_gems) { {} }
     let(:gemspec) do
       instance_double(
@@ -45,23 +53,41 @@ RSpec.describe Devpack::Gems do
       end
       allow(Gem::Specification).to receive(:load) { gemspec }
 
-      installed_gems.each { |name| allow(Kernel).to receive(:require).with(name) }
+      installed_gems_require.each do |name|
+        if name.include?('-')
+          allow(Kernel).to receive(:require).with(name.tr('-', '/'))
+        else
+          allow(Kernel).to receive(:require).with(name)
+        end
+      end
+      installed_gems_no_require.each { |name| expect(Kernel).not_to receive(:require).with(name) }
     end
 
     context 'with .devpack file in provided directory' do
       context 'with all specified gems installed' do
         before { expect(Devpack).to receive(:warn).exactly(1).times }
-        let(:requested_gems) { installed_gems }
-        it { is_expected.to eql requested_gems }
+        let(:requested_gems) { gem_refs }
+        it { is_expected.to eql installed_gems }
 
         it 'adds gemspec to Gem.loaded_specs' do
           subject
-          expect(loaded_gems.keys).to contain_exactly('installed1', 'installed2', 'installed3')
+          expect(loaded_gems.keys).to contain_exactly('installed1', 'installed2', 'installed3', 'installed4-module', 'installed_no_require1')
+        end
+      end
+
+      context 'with gems with hyphen in name' do
+        before { expect(Devpack).to receive(:warn).exactly(1).times }
+        let(:requested_gems) { gem_refs }
+        it { is_expected.to eql installed_gems }
+
+        it 'adds gemspec to Gem.loaded_specs' do
+          subject
+          expect(loaded_gems.keys).to contain_exactly('installed1', 'installed2', 'installed3', 'installed4-module', 'installed_no_require1')
         end
       end
 
       context 'with some specified gems not installed' do
-        let(:requested_gems) { installed_gems + not_installed_gems }
+        let(:requested_gems) { gem_refs + not_installed_gem_refs }
         it 'provides list of installed gems' do
           allow(Devpack).to receive(:warn)
           expect(subject).to eql installed_gems
@@ -77,12 +103,12 @@ RSpec.describe Devpack::Gems do
       end
 
       context 'with missing gems and DEVPACK_DEBUG enabled' do
-        let(:requested_gems) { %w[not_installed1] }
+        let(:requested_gems) { not_installed_gem_refs }
         before { allow(Devpack).to receive(:debug?) { true } }
         it 'issues a warning including error and traceback' do
           expect(Devpack).to receive(:warn).at_least(:once).with(any_args) do |_level, message|
             next if message.include?('development gem(s)')
-            next if message.include?('Install 1 missing gem(s)')
+            next if message.include?('Install 3 missing gem(s)')
 
             [
               'Failed to load',
@@ -106,8 +132,9 @@ RSpec.describe Devpack::Gems do
     end
 
     context '.gemspec found in specifications directory' do
-      let(:requested_gems) { ['example'] }
-      let(:installed_gems) { requested_gems }
+      let(:installed_gems_require) { ['example'] }
+      let(:installed_gems_no_require) { [] }
+      let(:not_installed_gems) { [] }
       let(:example_gem_path) { gem_home.join('gems', 'example-1.0.0') }
       let(:gemspec_path) do
         File.expand_path(File.join(__dir__, '..', 'fixtures', 'example.gemspec'))
