@@ -44,3 +44,7 @@ Fully activate gem on load: add gem spec to `Gem.loaded_specs` and set instance 
 
 - Add support for gems which are not required automatically
 - Fix requiring gems where a hyphen in the gem name corresponds to a path slash in the require.
+
+## 0.4.3
+
+Locate gems via `Gem.path` instead of reading the `GEM_PATH`/`GEM_HOME` environment variables directly. When `BUNDLE_PATH` is configured (e.g. in Docker images), Bundler sets `GEM_PATH` to an empty string so that RubyGems searches only the bundle path — read literally, that meant no search path at all, so installed gems were never found. `Gem.path` resolves the same variables the way RubyGems does.

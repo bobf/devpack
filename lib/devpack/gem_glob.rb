@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Devpack
-  # Locates gems by searching in paths listed in GEM_PATH
+  # Locates gems by searching in RubyGems' effective search path (Gem.path)
   class GemGlob
     def find(name)
       matched_paths(name)
@@ -15,10 +15,13 @@ module Devpack
       @glob ||= gem_paths.map { |path| Dir.glob(path.join('gems', '*')) }.flatten
     end
 
+    # Gem.path rather than the GEM_PATH/GEM_HOME environment variables:
+    # Bundler sets GEM_PATH to an empty string when BUNDLE_PATH is configured
+    # (so RubyGems searches only the bundle path), which read literally is no
+    # search path at all. Gem.path resolves the same variables the way
+    # RubyGems does.
     def gem_paths
-      return [] if gem_path.nil?
-
-      gem_path.split(':').map { |path| Pathname.new(path) }
+      Gem.path.map { |path| Pathname.new(path) }
     end
 
     def match?(name_with_version, basename)
@@ -41,13 +44,6 @@ module Devpack
 
     def version(path)
       Gem::Version.new(File.split(path).last.rpartition('-').last)
-    end
-
-    def gem_path
-      return ENV.fetch('GEM_PATH', nil) if ENV.key?('GEM_PATH')
-      return ENV.fetch('GEM_HOME', nil) if ENV.key?('GEM_HOME')
-
-      nil
     end
   end
 end

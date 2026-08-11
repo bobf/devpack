@@ -8,16 +8,16 @@ RSpec.describe Devpack::GemGlob do
     subject(:find) { gem_glob.find(name) }
     let(:name) { 'example' }
 
-    context 'gem not present in GEM_PATH' do
+    context 'gem not present in Gem.path' do
       it { is_expected.to be_empty }
     end
 
-    context 'gem present in GEM_PATH' do
+    context 'gem present in Gem.path' do
       let(:base_path) { File.join(Dir.tmpdir, 'gem_path') }
       let(:gem_path) { File.join(base_path, 'gems', 'example-0.1.0') }
 
       before do
-        stub_const('ENV', ENV.to_h.merge('GEM_PATH' => base_path))
+        allow(Gem).to receive(:path) { [base_path] }
         FileUtils.mkdir_p(gem_path)
       end
 
@@ -46,6 +46,15 @@ RSpec.describe Devpack::GemGlob do
         before { FileUtils.mkdir_p(other_path) }
         after { FileUtils.rm_r(other_path) }
         it { is_expected.to eql [gem_path, other_path] }
+      end
+
+      context 'GEM_PATH emptied by Bundler (BUNDLE_PATH configured)' do
+        before do
+          env = ENV.to_h.merge('GEM_PATH' => '', 'GEM_HOME' => base_path)
+          allow(Gem).to receive(:path) { Gem::PathSupport.new(env).path }
+        end
+
+        it { is_expected.to eql [gem_path] }
       end
     end
   end
